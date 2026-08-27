@@ -15,4 +15,5 @@ public class Room
     [Required] public int PricePerHour { get; set; }
     
     
+    
 }
