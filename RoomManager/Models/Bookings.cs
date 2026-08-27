@@ -2,13 +2,13 @@
 
 namespace RoomManager.Models;
 
-public class Booking
+public class Bookings
 {
     public Guid Id { get; set; }
     
     [Required] public int RoomId { get; set; }
 
-    public Room? Room { get; set; }
+    public Rooms? Room { get; set; }
 
     [Required] public DateOnly DateWhenAvailable { get; set; }
 
@@ -16,7 +16,7 @@ public class Booking
 
     [Required]public TimeOnly AvailableUntil { get; set; }
     
-    [Required] public BookingStatus Status { get; set; }
+    [Required] public BookingStatuses Statuses { get; set; }
 
-    [Required] public List<string> SelectedServices { get; set; } = null!;
+    [Required] public Dictionary<string, int> SelectedServices { get; set; } = null!;
 }

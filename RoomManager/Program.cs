@@ -1,9 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using RoomManager.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 
-var app = builder.Build();
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {

@@ -2,7 +2,7 @@
 
 namespace RoomManager.Models;
 
-public class Room
+public class Rooms
 {
     public Guid Id { get; set; }
 
@@ -10,10 +10,7 @@ public class Room
     
     [Required] public int Capacity { get; set; }
 
-    [Required] public List<string> AvailableServices { get; set; } = null!;
+    [Required] public Dictionary<string, int> Services { get; set; } = null!;
     
     [Required] public int PricePerHour { get; set; }
-    
-    
-    
 }

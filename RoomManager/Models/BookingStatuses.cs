@@ -1,6 +1,6 @@
 ﻿namespace RoomManager.Models;
 
-public enum BookingStatus
+public enum BookingStatuses
 {
     Booked, Available
 }
