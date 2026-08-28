@@ -10,7 +10,7 @@ public class Rooms
     
     [Required] public int Capacity { get; set; }
 
-    [Required] public Dictionary<string, int> Services { get; set; } = null!;
+    [Required] public Services Services { get; set; } = null!;
     
     [Required] public int PricePerHour { get; set; }
 }

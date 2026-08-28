@@ -6,7 +6,7 @@ public class Bookings
 {
     public Guid Id { get; set; }
     
-    [Required] public int RoomId { get; set; }
+    [Required] public int RoomsId { get; set; }
 
     public Rooms? Room { get; set; }
 
@@ -18,5 +18,5 @@ public class Bookings
     
     [Required] public BookingStatuses Statuses { get; set; }
 
-    [Required] public Dictionary<string, int> SelectedServices { get; set; } = null!;
+    [Required] public Services SelectedServices { get; set; } = null!;
 }
