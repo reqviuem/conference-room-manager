@@ -1,20 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RoomManager.Dtos.Requests;
+using RoomManager.Services;
 
 namespace RoomManager.Controllers;
 
 [ApiController]
 public class RoomController : ControllerBase
 {
-    
-    public RoomController()
+    private readonly IMainService _mainService;
+
+    public RoomController(IMainService mainService)
     {
-        
+        _mainService = mainService;
     }
 
     [HttpPost]
+    [Route("/create")]
     public async Task<IActionResult> CreateRoom(RoomCreateRequestDto roomCreateRequestDto)
     {
-        return Ok();
+        var room = await _mainService.CreateRoom(roomCreateRequestDto);
+        return Ok(room);
     }
 }

@@ -1,14 +1,20 @@
 using Microsoft.EntityFrameworkCore;
 using RoomManager.Data;
+using RoomManager.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddScoped<IMainService, MainService>();
+
 var app = builder.Build();
+
+app.MapControllers();
 
 using (var scope = app.Services.CreateScope())
 {

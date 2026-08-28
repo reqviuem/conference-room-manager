@@ -1,7 +1,9 @@
-﻿namespace RoomManager.Dtos.Requests;
+﻿namespace RoomManager.Dtos.Responses;
 
-public class RoomCreateRequestDto
+public class RoomCreateResponseDto
 {
+    public required Guid Id { get; set; }
+    
     public required string Name { get; set; }
     
     public required int Capacity { get; set; }
