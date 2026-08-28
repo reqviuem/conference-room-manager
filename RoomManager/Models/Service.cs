@@ -2,11 +2,11 @@
 
 namespace RoomManager.Models;
 
-public class Services
+public class Service
 {
     public Guid Id { get; set; }
-
+    
     [Required] public string Name { get; set; } = null!;
 
-    [Required] public int Price { get; set; }
+    [Required] public decimal Price { get; set; }
 }

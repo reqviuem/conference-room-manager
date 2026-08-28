@@ -19,9 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Controllers\" />
-      <Folder Include="Dtos\" />
-      <Folder Include="Services\" />
+      <Folder Include="Dtos\Responses\" />
     </ItemGroup>
 
 </Project>
