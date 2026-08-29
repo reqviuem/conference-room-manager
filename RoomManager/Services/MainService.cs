@@ -62,35 +62,47 @@ public class MainService : IMainService
         return createResponseDto;
     }
 
-    public async Task<RoomUpdateResponseDto> UpdateRoom(RoomUpdateRequestDto roomUpdateRequestDto)
+    public async Task<RoomUpdateResponseDto> UpdateRoom(Guid requestedRoomId, RoomUpdateRequestDto roomUpdateRequestDto)
     {
-        var roomToUpdate = await _appDbContext.Rooms.FirstOrDefaultAsync(room => room.Id == roomUpdateRequestDto.Id);
+        var roomToUpdate = await _appDbContext.Rooms.Include(room => room.RoomServices)
+            .ThenInclude(roomService => roomService.Service)
+            .FirstOrDefaultAsync(room => room.Id == requestedRoomId);
 
-        var serviceToAdd = roomUpdateRequestDto.Services.Distinct().ToList();
-
-        var services = await _appDbContext.Services
-            .Where(service => serviceToAdd.Contains(service.Name))
-            .ToListAsync();
-
-        if (roomToUpdate != null)
+        if (roomToUpdate is null)
         {
-            roomToUpdate.PricePerHour = roomUpdateRequestDto.BasePricePerHour;
-            roomToUpdate.RoomServices = services
-                .Select(service => new RoomService()
-                {
-                    ServiceId = service.Id
-                }).ToList();
-            
-            return new RoomUpdateResponseDto()
-            {
-                Id = roomToUpdate.Id,
-                BasePricePerHour = roomToUpdate.PricePerHour,
-                Services = services.Select(service => service.Name).ToList(),
-                Name = roomToUpdate.Name,
-                Capacity = roomToUpdate.Capacity
-            };
+            return null;
         }
 
-        return null;
+        var servicesToAdd = roomUpdateRequestDto.Services.Distinct().ToList();
+
+        var services = await _appDbContext.Services
+            .Where(service => servicesToAdd.Contains(service.Name))
+            .ToListAsync();
+
+        //Using HashSet instead of list for fast lookup by value
+        var existingServiceIds = roomToUpdate.RoomServices.Select(roomService => roomService.ServiceId)
+            .ToHashSet();
+
+        var roomServicesToAdd = services
+            .Where(service => !existingServiceIds.Contains(service.Id))
+            .Select(service => new RoomService
+            {
+                RoomId = roomToUpdate.Id,
+                ServiceId = service.Id
+            }).ToList();
+            
+        roomToUpdate.RoomServices.AddRange(roomServicesToAdd);
+        roomToUpdate.PricePerHour = roomUpdateRequestDto.BasePricePerHour;
+
+        await _appDbContext.SaveChangesAsync();
+        
+        return new RoomUpdateResponseDto()
+        {
+            Id = roomToUpdate.Id,
+            BasePricePerHour = roomToUpdate.PricePerHour,
+            Capacity = roomToUpdate.Capacity,
+            Name = roomToUpdate.Name,
+            Services = roomToUpdate.RoomServices.Select(service => service.Service.Name).ToList()
+        };
     }
 }

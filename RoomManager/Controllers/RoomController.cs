@@ -21,4 +21,18 @@ public class RoomController : ControllerBase
         var room = await _mainService.CreateRoom(roomCreateRequestDto);
         return Ok(room);
     }
+
+    [HttpPatch]
+    [Route("/update")]
+    public async Task<IActionResult> UpdateRoom(Guid requestedRoomId, RoomUpdateRequestDto roomUpdateRequestDto)
+    {
+        var updatedRoom = await _mainService.UpdateRoom(requestedRoomId,roomUpdateRequestDto);
+
+        if (updatedRoom is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(updatedRoom);
+    }
 }
