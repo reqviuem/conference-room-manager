@@ -35,4 +35,20 @@ public class RoomController : ControllerBase
 
         return Ok(updatedRoom);
     }
+
+    [HttpPost]
+    [Route("/delete")]
+    public async Task<IActionResult> DeleteRoom(Guid roomId)
+    {
+        return Ok(await _mainService.Delete(roomId));
+    }
+
+    [HttpGet]
+    [Route("/rooms")]
+    public async Task<IActionResult> FindAvailableRoom([FromQuery]AvailableRoomsRequestDto request)
+    {
+        var availableRooms = await _mainService.FindAvailableRooms(request);
+
+        return Ok(availableRooms);
+    }
 }

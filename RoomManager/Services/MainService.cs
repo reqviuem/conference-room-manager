@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 using RoomManager.Data;
 using RoomManager.Dtos.Requests;
 using RoomManager.Dtos.Responses;
@@ -88,7 +89,8 @@ public class MainService : IMainService
             .Select(service => new RoomService
             {
                 RoomId = roomToUpdate.Id,
-                ServiceId = service.Id
+                ServiceId = service.Id,
+                Service = service
             }).ToList();
             
         roomToUpdate.RoomServices.AddRange(roomServicesToAdd);
@@ -104,5 +106,79 @@ public class MainService : IMainService
             Name = roomToUpdate.Name,
             Services = roomToUpdate.RoomServices.Select(service => service.Service.Name).ToList()
         };
+
+        
     }
+    public async Task<string> Delete(Guid id)
+    {
+        var roomToDelete = await _appDbContext.Rooms.Include(room => room.RoomServices)
+            .FirstOrDefaultAsync(room => id == room.Id);
+
+        if (roomToDelete is null)
+        {
+            return null;
+        }
+        
+        _appDbContext.Rooms.Remove(roomToDelete);
+
+        await _appDbContext.SaveChangesAsync();
+
+        return $"Room with {id} successfully deleted";
+
+    }
+
+    public async Task<IEnumerable<AvailableRoomsResponseDto>> FindAvailableRooms(AvailableRoomsRequestDto requestedRoom)
+    {
+        var startAt = StartAt(requestedRoom);
+        var endAt = EndAt(requestedRoom);
+        
+        var rooms = await _appDbContext.Rooms
+            .Where(room => room.Capacity >= requestedRoom.Capacity)
+            .Where(room => !_appDbContext.Bookings
+                .Any(booking => booking.RoomId == room.Id && booking.StartAt < endAt && booking.EndAt > startAt))
+            .Select(room => new AvailableRoomsResponseDto()
+            {
+                Name = room.Name,
+                BasePricePerHour = room.PricePerHour,
+                Capacity = room.Capacity,
+                Services = room.RoomServices.Select(service => service.Service.Name).ToList()
+            }).ToListAsync();
+
+        return rooms;
+    }
+
+    private DateTime StartAt(AvailableRoomsRequestDto requestedRoom)
+    {
+        var date = DateOnly.ParseExact(
+            requestedRoom.Date,
+            "dd.MM.yyyy",
+            CultureInfo.InvariantCulture);
+
+        var from = TimeOnly.ParseExact(
+            requestedRoom.From,
+            "HH:mm",
+            CultureInfo.InvariantCulture);
+
+        var local = date.ToDateTime(from);
+        var startAt = local.ToUniversalTime();
+        return startAt;
+    } 
+    
+    
+    private DateTime EndAt(AvailableRoomsRequestDto requestedRoom)
+    {
+        var date = DateOnly.ParseExact(
+            requestedRoom.Date,
+            "dd.MM.yyyy",
+            CultureInfo.InvariantCulture);
+
+        var until = TimeOnly.ParseExact(
+            requestedRoom.Until,
+            "HH:mm",
+            CultureInfo.InvariantCulture);
+
+        var  local = date.ToDateTime(until);
+        var endAt = local.ToUniversalTime();
+        return endAt;
+    } 
 }
