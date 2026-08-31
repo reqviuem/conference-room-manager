@@ -45,7 +45,7 @@ public class MainService : IMainService
                 "Base price per hour must be greater than zero.");
         }
 
-        if (roomCreateRequestDto.Services is null || roomCreateRequestDto.Services.Count == 0)
+        if (roomCreateRequestDto.Services.Count == 0)
         {
             return ServiceResult<RoomCreateResponseDto>.Fail(
                 "ValidationFailed",
@@ -124,7 +124,7 @@ public class MainService : IMainService
                 "Base price per hour must be greater than zero.");
         }
 
-        if (roomUpdateRequestDto.Services is null)
+        if (roomUpdateRequestDto.Services.Count == 0)
         {
             return ServiceResult<RoomUpdateResponseDto>.Fail(
                 "ValidationFailed",
@@ -233,6 +233,13 @@ public class MainService : IMainService
                 "Capacity must be greater than zero.");
         }
 
+        if (_dateSerializer.CheckPastDate(requestedRoom.Date))
+        {
+            return ServiceResult<IEnumerable<AvailableRoomsResponseDto>>.Fail(
+                "ValidationFailed",
+                "Date can not be in past.");
+        }
+        
         DateTime startAt;
         DateTime endAt;
 
@@ -293,11 +300,18 @@ public class MainService : IMainService
                 "Duration must be greater than zero.");
         }
 
-        if (request.Services is null)
+        if (request.Services.Count == 0)
         {
             return ServiceResult<BookingCreateResponseDto>.Fail(
                 "ValidationFailed",
                 "Services list is required.");
+        }
+        
+        if (_dateSerializer.CheckPastDate(request.Date))
+        {
+            return ServiceResult<BookingCreateResponseDto>.Fail(
+                "ValidationFailed",
+                "Date can not be in past.");
         }
 
         DateTime startAt;

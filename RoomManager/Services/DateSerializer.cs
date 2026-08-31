@@ -44,4 +44,21 @@ public class DateSerializer
     {
         return startAt.AddHours((double)durationHours);
     }
+
+    public bool CheckPastDate(string requestDate)
+    {
+        var dateIsPast = false;
+        
+        var date = DateTime.ParseExact(
+            requestDate,
+            "dd.MM.yyyy",
+            CultureInfo.InvariantCulture);
+
+        if (date < DateTime.Now)
+        {
+            dateIsPast = true;
+        }
+
+        return dateIsPast;
+    }
 }

@@ -19,6 +19,12 @@ public class RoomController : ControllerBase
     public async Task<IActionResult> CreateRoom(RoomCreateRequestDto roomCreateRequestDto)
     {
         var room = await _mainService.CreateRoom(roomCreateRequestDto);
+
+        if (room.ErrorCode != null)
+        {
+            return BadRequest(room);
+        }
+
         return Ok(room);
     }
 
@@ -28,6 +34,11 @@ public class RoomController : ControllerBase
     {
         var updatedRoom = await _mainService.UpdateRoom(requestedRoomId,roomUpdateRequestDto);
 
+        if (updatedRoom.ErrorCode != null)
+        {
+            return BadRequest(updatedRoom);
+        }
+
         return Ok(updatedRoom);
     }
 
@@ -35,7 +46,13 @@ public class RoomController : ControllerBase
     [Route("/delete")]
     public async Task<IActionResult> DeleteRoom(Guid roomId)
     {
-        return Ok(await _mainService.Delete(roomId));
+        var deletedRoom = await _mainService.Delete(roomId);
+        
+        if (deletedRoom.ErrorCode != null)
+        {
+            return BadRequest(deletedRoom);
+        }
+        return Ok(deletedRoom);
     }
 
     [HttpGet]
@@ -44,6 +61,11 @@ public class RoomController : ControllerBase
     {
         var availableRooms = await _mainService.FindAvailableRooms(request);
 
+        if (availableRooms.ErrorCode != null)
+        {
+            return BadRequest(availableRooms);
+        }
+        
         return Ok(availableRooms);
     }
 
@@ -53,6 +75,11 @@ public class RoomController : ControllerBase
     {
         var booking = await _mainService.BookRoom(request);
 
+        if (booking.ErrorCode != null)
+        {
+            return BadRequest(booking);
+        }
+        
         return Ok(booking);
     }
 }
