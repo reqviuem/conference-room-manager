@@ -27,7 +27,7 @@ public class AppDbContext : DbContext
                 bookingService.BookingId,
                 bookingService.ServiceId
             });
-        
+
         modelBuilder.Entity<Booking>(entity =>
         {
             entity.Property(booking => booking.StartAt)
@@ -36,15 +36,11 @@ public class AppDbContext : DbContext
             entity.Property(booking => booking.EndAt)
                 .HasColumnType("timestamp without time zone");
         });
-        
-        
+
+
         modelBuilder.Entity<Service>(entity =>
         {
-            entity.ToTable("Services");
-
             entity.HasKey(n => n.Id);
-
-            entity.Property(n => n.Price).IsRequired();
 
             entity.HasData(
                 new Service
@@ -64,6 +60,34 @@ public class AppDbContext : DbContext
                     Id = Guid.Parse("33333333-3333-3333-3333-333333333333"),
                     Name = "Звук",
                     Price = 700
+                }
+            );
+        });
+
+        modelBuilder.Entity<Room>(entity =>
+        {
+            entity.HasKey(r => r.Id);
+            entity.HasData(
+                new Room()
+                {
+                    Id = Guid.Parse("b1111111-1111-1111-1111-111111111111"),
+                    Name = "Зал А",
+                    Capacity = 50,
+                    PricePerHour = 2000m
+                },
+                new Room()
+                {
+                    Id = Guid.Parse("a2222222-2222-2222-2222-222222222222"),
+                    Name = "Зал B",
+                    Capacity = 100,
+                    PricePerHour = 3500m
+                },
+                new Room()
+                {
+                    Id = Guid.Parse("c3333333-3333-3333-3333-333333333333"),
+                    Name = "Зал C",
+                    Capacity = 30,
+                    PricePerHour = 1500m
                 }
             );
         });

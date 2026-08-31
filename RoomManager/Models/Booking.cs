@@ -8,6 +8,8 @@ public class Booking
     
     public Guid RoomId { get; set; }
     
+    public Room? Room { get; set; }
+    
      [Required]public DateTime StartAt { get; set; }
     
      [Required]public DateTime EndAt { get; set; }

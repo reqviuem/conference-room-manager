@@ -205,14 +205,14 @@ public class MainService : IMainService
         var roomToDelete = await _appDbContext.Rooms
             .Include(room => room.RoomServices)
             .FirstOrDefaultAsync(room => id == room.Id);
-
+        
         if (roomToDelete is null)
         {
             return ServiceResult<string>.Fail(
                 "RoomNotFound",
                 "Room was not found.");
         }
-
+        
         _appDbContext.Rooms.Remove(roomToDelete);
         await _appDbContext.SaveChangesAsync();
 

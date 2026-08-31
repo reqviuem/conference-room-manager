@@ -42,6 +42,8 @@ namespace RoomManager.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RoomId");
+
                     b.ToTable("Bookings");
                 });
 
@@ -80,6 +82,29 @@ namespace RoomManager.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Rooms");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("b1111111-1111-1111-1111-111111111111"),
+                            Capacity = 50,
+                            Name = "Зал А",
+                            PricePerHour = 2000m
+                        },
+                        new
+                        {
+                            Id = new Guid("a2222222-2222-2222-2222-222222222222"),
+                            Capacity = 100,
+                            Name = "Зал B",
+                            PricePerHour = 3500m
+                        },
+                        new
+                        {
+                            Id = new Guid("c3333333-3333-3333-3333-333333333333"),
+                            Capacity = 30,
+                            Name = "Зал C",
+                            PricePerHour = 1500m
+                        });
                 });
 
             modelBuilder.Entity("RoomManager.Models.RoomService", b =>
@@ -112,7 +137,7 @@ namespace RoomManager.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Services", (string)null);
+                    b.ToTable("Services");
 
                     b.HasData(
                         new
@@ -133,6 +158,17 @@ namespace RoomManager.Migrations
                             Name = "Звук",
                             Price = 700m
                         });
+                });
+
+            modelBuilder.Entity("RoomManager.Models.Booking", b =>
+                {
+                    b.HasOne("RoomManager.Models.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Room");
                 });
 
             modelBuilder.Entity("RoomManager.Models.BookingService", b =>
