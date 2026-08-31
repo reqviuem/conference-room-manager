@@ -5,10 +5,12 @@ namespace RoomManager.Services;
 
 public interface IMainService
 {
-    Task<RoomCreateResponseDto> CreateRoom(RoomCreateRequestDto roomCreateRequestDto);
-    Task<RoomUpdateResponseDto> UpdateRoom(Guid requestedRoomId,RoomUpdateRequestDto roomUpdateRequestDto);
+    Task<ServiceResult<RoomCreateResponseDto>> CreateRoom(RoomCreateRequestDto roomCreateRequestDto);
+    Task<ServiceResult<RoomUpdateResponseDto>> UpdateRoom(Guid requestedRoomId, RoomUpdateRequestDto roomUpdateRequestDto);
 
-    Task<string> Delete(Guid id);
+    Task<ServiceResult<string>> Delete(Guid id);
 
-    Task<IEnumerable<AvailableRoomsResponseDto>> FindAvailableRooms(AvailableRoomsRequestDto requestedRoom);
+    Task<ServiceResult<IEnumerable<AvailableRoomsResponseDto>>> FindAvailableRooms(AvailableRoomsRequestDto requestedRoom);
+
+    Task<ServiceResult<BookingCreateResponseDto>> BookRoom(BookingCreateRequestDto request);
 }

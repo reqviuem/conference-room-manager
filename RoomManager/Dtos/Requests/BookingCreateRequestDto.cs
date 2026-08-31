@@ -2,7 +2,7 @@
 
 public class BookingCreateRequestDto
 {
-    public Guid RoomId { get; set; }
+    public Guid RoomId { get; set; } = Guid.Empty;
     
     public required string Date { get; set; }
     

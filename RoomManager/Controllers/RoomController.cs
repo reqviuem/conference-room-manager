@@ -28,15 +28,10 @@ public class RoomController : ControllerBase
     {
         var updatedRoom = await _mainService.UpdateRoom(requestedRoomId,roomUpdateRequestDto);
 
-        if (updatedRoom is null)
-        {
-            return NotFound();
-        }
-
         return Ok(updatedRoom);
     }
 
-    [HttpPost]
+    [HttpDelete]
     [Route("/delete")]
     public async Task<IActionResult> DeleteRoom(Guid roomId)
     {
@@ -50,5 +45,14 @@ public class RoomController : ControllerBase
         var availableRooms = await _mainService.FindAvailableRooms(request);
 
         return Ok(availableRooms);
+    }
+
+    [HttpPost]
+    [Route("/book")]
+    public async Task<IActionResult> BookARoom(BookingCreateRequestDto request)
+    {
+        var booking = await _mainService.BookRoom(request);
+
+        return Ok(booking);
     }
 }

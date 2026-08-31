@@ -18,8 +18,7 @@ public class DateSerializer
             "HH:mm",
             CultureInfo.InvariantCulture);
 
-        var local = date.ToDateTime(from);
-        var startAt = local.ToUniversalTime();
+        var startAt = date.ToDateTime(from);
         return startAt;
     }
 
@@ -36,9 +35,7 @@ public class DateSerializer
             "HH:mm",
             CultureInfo.InvariantCulture);
 
-        var local = date.ToDateTime(until);
-
-        var endAt = local.ToUniversalTime();
+        var endAt = date.ToDateTime(until);
 
         return endAt;
     }

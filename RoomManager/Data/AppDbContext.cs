@@ -28,6 +28,16 @@ public class AppDbContext : DbContext
                 bookingService.ServiceId
             });
         
+        modelBuilder.Entity<Booking>(entity =>
+        {
+            entity.Property(booking => booking.StartAt)
+                .HasColumnType("timestamp without time zone");
+
+            entity.Property(booking => booking.EndAt)
+                .HasColumnType("timestamp without time zone");
+        });
+        
+        
         modelBuilder.Entity<Service>(entity =>
         {
             entity.ToTable("Services");
