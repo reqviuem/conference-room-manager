@@ -12,10 +12,7 @@ public class MainService : IMainService
     private readonly DateSerializer _dateSerializer;
     private readonly BookingPriceCalculator _bookingPriceCalculator;
 
-    public MainService(
-        AppDbContext appDbContext,
-        DateSerializer dateSerializer,
-        BookingPriceCalculator bookingPriceCalculator)
+    public MainService(AppDbContext appDbContext, DateSerializer dateSerializer, BookingPriceCalculator bookingPriceCalculator)
     {
         _appDbContext = appDbContext;
         _dateSerializer = dateSerializer;
@@ -159,7 +156,8 @@ public class MainService : IMainService
                 "InvalidServices",
                 "One or more selected services do not exist.");
         }
-
+        
+        // HashSet for O(1) contains lookups when checking for existing services
         var existingServiceIds = roomToUpdate.RoomServices
             .Select(roomService => roomService.ServiceId)
             .ToHashSet();
@@ -262,8 +260,10 @@ public class MainService : IMainService
                 "Until time must be later than from time.");
         }
 
+        
         var rooms = await _appDbContext.Rooms
             .Where(room => room.Capacity >= requestedRoom.Capacity)
+            // Exclude rooms with a booking that overlaps the requested [startAt, endAt) window
             .Where(room => !_appDbContext.Bookings
                 .Any(booking => booking.RoomId == room.Id
                                 && booking.StartAt < endAt
