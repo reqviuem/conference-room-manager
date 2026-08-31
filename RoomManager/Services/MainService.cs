@@ -92,12 +92,12 @@ public class MainService : IMainService
                 ServiceId = service.Id,
                 Service = service
             }).ToList();
-            
+
         roomToUpdate.RoomServices.AddRange(roomServicesToAdd);
         roomToUpdate.PricePerHour = roomUpdateRequestDto.BasePricePerHour;
 
         await _appDbContext.SaveChangesAsync();
-        
+
         return new RoomUpdateResponseDto()
         {
             Id = roomToUpdate.Id,
@@ -106,9 +106,8 @@ public class MainService : IMainService
             Name = roomToUpdate.Name,
             Services = roomToUpdate.RoomServices.Select(service => service.Service.Name).ToList()
         };
-
-        
     }
+
     public async Task<string> Delete(Guid id)
     {
         var roomToDelete = await _appDbContext.Rooms.Include(room => room.RoomServices)
@@ -118,24 +117,28 @@ public class MainService : IMainService
         {
             return null;
         }
-        
+
         _appDbContext.Rooms.Remove(roomToDelete);
 
         await _appDbContext.SaveChangesAsync();
 
         return $"Room with {id} successfully deleted";
-
     }
 
     public async Task<IEnumerable<AvailableRoomsResponseDto>> FindAvailableRooms(AvailableRoomsRequestDto requestedRoom)
     {
-        var startAt = StartAt(requestedRoom);
-        var endAt = EndAt(requestedRoom);
+        DateSerializer dateSerializer = new DateSerializer();
         
+        var startAt = dateSerializer.StartAt(requestedRoom.Date,requestedRoom.From);
+        var endAt = dateSerializer.EndAt(requestedRoom.Date,requestedRoom.From);
+
         var rooms = await _appDbContext.Rooms
             .Where(room => room.Capacity >= requestedRoom.Capacity)
             .Where(room => !_appDbContext.Bookings
-                .Any(booking => booking.RoomId == room.Id && booking.StartAt < endAt && booking.EndAt > startAt))
+                // Excluding rooms that already have a booking overlapping the requested time range.
+                .Any(booking => booking.RoomId == room.Id
+                                && booking.StartAt < endAt
+                                && booking.EndAt > startAt))
             .Select(room => new AvailableRoomsResponseDto()
             {
                 Name = room.Name,
@@ -147,38 +150,76 @@ public class MainService : IMainService
         return rooms;
     }
 
-    private DateTime StartAt(AvailableRoomsRequestDto requestedRoom)
+    public async Task<string> BookRoom(BookingCreateRequestDto request)
     {
-        var date = DateOnly.ParseExact(
-            requestedRoom.Date,
-            "dd.MM.yyyy",
-            CultureInfo.InvariantCulture);
+        DateSerializer dateSerializer = new DateSerializer();
 
-        var from = TimeOnly.ParseExact(
-            requestedRoom.From,
-            "HH:mm",
-            CultureInfo.InvariantCulture);
+        BookingPriceCalculator bookingPriceCalculator = new BookingPriceCalculator();
+        
+        var startAt = dateSerializer.StartAt(request.Date,request.StartTime);
+        
+        var endAt = dateSerializer.BuildEndAtFromDuration(startAt,request.DurationHours);
+        
+        var roomToBook = await _appDbContext.Rooms
+            .Include(room => room.RoomServices)
+            .ThenInclude(roomService => roomService.Service)
+            .Where(room => room.Id == request.RoomId)
+            .Where(room => !_appDbContext.Bookings.Any(booking =>
+                booking.RoomId == room.Id
+                && booking.StartAt < endAt
+                && booking.EndAt > startAt))
+            .FirstOrDefaultAsync();
+        
+        if (roomToBook is null)
+        {
+            return null;
+        }
+        
+        var servicesToAdd = request.Services.Distinct().ToList();
+        
+        var roomServiceNames = roomToBook.RoomServices
+            .Select(roomService => roomService.Service.Name)
+            .ToHashSet();
 
-        var local = date.ToDateTime(from);
-        var startAt = local.ToUniversalTime();
-        return startAt;
-    } 
+        var invalidServices = servicesToAdd
+            .Where(serviceName => !roomServiceNames.Contains(serviceName))
+            .ToList();
+
+        if (invalidServices.Any())
+        {
+            return null;
+        }
+        
+        
+        var selectedService = await _appDbContext.Services.Where(service => servicesToAdd.Contains(service.Name)).ToListAsync();
+
+        var roomPrice = bookingPriceCalculator.CalculateRoomPrice(
+            roomToBook.PricePerHour,
+            startAt,
+            endAt);
+
+        var servicesPrice = selectedService.Sum(service => service.Price);
+
+        var totalPrice = roomPrice + servicesPrice;
+        
+        var newBooking = new Booking()
+        {
+            RoomId = roomToBook.Id,
+            BookingServices = selectedService.Select(service => new BookingService()
+            {
+                ServiceId = service.Id,
+                PriceAtBooking = service.Price
+            }).ToList(),
+            StartAt = startAt,
+            EndAt = endAt,
+            TotalPrice = totalPrice
+        };
+
+        await _appDbContext.AddAsync(newBooking);
+
+        await _appDbContext.SaveChangesAsync();
+
+        return $"Booking successfully created with the total price of {newBooking.TotalPrice}";
+    }
     
-    
-    private DateTime EndAt(AvailableRoomsRequestDto requestedRoom)
-    {
-        var date = DateOnly.ParseExact(
-            requestedRoom.Date,
-            "dd.MM.yyyy",
-            CultureInfo.InvariantCulture);
-
-        var until = TimeOnly.ParseExact(
-            requestedRoom.Until,
-            "HH:mm",
-            CultureInfo.InvariantCulture);
-
-        var  local = date.ToDateTime(until);
-        var endAt = local.ToUniversalTime();
-        return endAt;
-    } 
 }

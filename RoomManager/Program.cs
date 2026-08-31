@@ -11,6 +11,8 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IMainService, MainService>();
+builder.Services.AddScoped<BookingPriceCalculator>();
+builder.Services.AddScoped<DateSerializer>();
 
 var app = builder.Build();
 
