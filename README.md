@@ -48,7 +48,7 @@ RoomManager is a .NET-based Web API designed for efficient management and bookin
 
 3.  **Access API Documentation**:
     Once the app is running, navigate to:
-    - Swagger UI: `http://localhost:<port>/swagger`
+    - Swagger UI: `http://localhost:<port>/swagger/index.html`
     - OpenAPI JSON: `http://localhost:<port>/api-docs/v1.json`
     (Check your terminal output or `Properties/launchSettings.json` for the exact port).
 
