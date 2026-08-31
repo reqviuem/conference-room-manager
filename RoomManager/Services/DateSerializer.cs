@@ -1,45 +1,28 @@
 ﻿using System.Globalization;
-using System.Runtime.InteropServices;
-using RoomManager.Dtos.Requests;
 
 namespace RoomManager.Services;
 
 public class DateSerializer
 {
+    private const string DateFormat = "dd.MM.yyyy";
+    private const string TimeFormat = "HH:mm";
+
     public DateTime StartAt(string requestDate, string requestFrom)
     {
-        var date = DateOnly.ParseExact(
-            requestDate,
-            "dd.MM.yyyy",
-            CultureInfo.InvariantCulture);
+        var date = ParseDate(requestDate);
+        var from = ParseTime(requestFrom);
 
-        var from = TimeOnly.ParseExact(
-            requestFrom,
-            "HH:mm",
-            CultureInfo.InvariantCulture);
-
-        var startAt = date.ToDateTime(from);
-        return startAt;
+        return date.ToDateTime(from);
     }
-
 
     public DateTime EndAt(string requestDate, string requestUntil)
     {
-        var date = DateOnly.ParseExact(
-            requestDate,
-            "dd.MM.yyyy",
-            CultureInfo.InvariantCulture);
+        var date = ParseDate(requestDate);
+        var until = ParseTime(requestUntil);
 
-        var until = TimeOnly.ParseExact(
-            requestUntil,
-            "HH:mm",
-            CultureInfo.InvariantCulture);
-
-        var endAt = date.ToDateTime(until);
-
-        return endAt;
+        return date.ToDateTime(until);
     }
-    
+
     public DateTime BuildEndAtFromDuration(DateTime startAt, decimal durationHours)
     {
         return startAt.AddHours((double)durationHours);
@@ -47,18 +30,37 @@ public class DateSerializer
 
     public bool CheckPastDate(string requestDate)
     {
-        var dateIsPast = false;
-        
-        var date = DateTime.ParseExact(
-            requestDate,
-            "dd.MM.yyyy",
-            CultureInfo.InvariantCulture);
+        var date = ParseDate(requestDate);
+        return date < DateOnly.FromDateTime(DateTime.Today);
+    }
 
-        if (date < DateTime.Now)
+    private static DateOnly ParseDate(string requestDate)
+    {
+        if (!DateOnly.TryParseExact(
+                requestDate,
+                DateFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var date))
         {
-            dateIsPast = true;
+            throw new FormatException();
         }
 
-        return dateIsPast;
+        return date;
+    }
+
+    private static TimeOnly ParseTime(string requestTime)
+    {
+        if (!TimeOnly.TryParseExact(
+                requestTime,
+                TimeFormat,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out var time))
+        {
+            throw new FormatException();
+        }
+
+        return time;
     }
 }

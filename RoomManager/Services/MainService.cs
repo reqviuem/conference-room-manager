@@ -306,13 +306,24 @@ public class MainService : IMainService
                 "ValidationFailed",
                 "Services list is required.");
         }
-        
-        if (_dateSerializer.CheckPastDate(request.Date))
+
+        try
+        {
+            if (_dateSerializer.CheckPastDate(request.Date))
+            {
+                return ServiceResult<BookingCreateResponseDto>.Fail(
+                    "ValidationFailed",
+                    "Date can not be in past.");
+            }
+        }
+        catch (FormatException)
         {
             return ServiceResult<BookingCreateResponseDto>.Fail(
-                "ValidationFailed",
-                "Date can not be in past.");
+                "InvalidDateTime",
+                "Date must be in dd.MM.yyyy format and start time must be in HH:mm format.");
         }
+        
+        
 
         DateTime startAt;
 
@@ -326,6 +337,7 @@ public class MainService : IMainService
                 "InvalidDateTime",
                 "Date must be in dd.MM.yyyy format and start time must be in HH:mm format.");
         }
+        
 
         var endAt = _dateSerializer.BuildEndAtFromDuration(startAt, request.DurationHours);
 

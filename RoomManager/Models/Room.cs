@@ -1,16 +1,15 @@
-﻿using System.ComponentModel.DataAnnotations;
-
+﻿
 namespace RoomManager.Models;
 
 public class Room
 {
     public Guid Id { get; set; }
     
-    [Required] public string Name { get; set; } = null!;
+    public string Name { get; set; } = null!;
     
-    [Required] public int Capacity { get; set; }
+   public int Capacity { get; set; }
     
-    [Required] public List<RoomService> RoomServices { get; set; } = null!;
+    public List<RoomService> RoomServices { get; set; } = new();
     
-    [Required] public decimal PricePerHour { get; set; }
+    public decimal PricePerHour { get; set; }
 }
